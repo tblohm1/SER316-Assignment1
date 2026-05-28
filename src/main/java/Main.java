@@ -6,6 +6,7 @@ public class Main {
 
         // Version 1.1 - Added quit functionality
         System.out.println("Good luck!");
+
         Scanner scanner = new Scanner(System.in);
         GameEngine engine = new GameEngine(1, 100);
         GameUI ui = new GameUI(engine, scanner);

@@ -58,6 +58,7 @@ public class GameEngineTest {
         engine.reset();
         assertEquals(0, engine.getAttempts());
         assertFalse(engine.isGameWon());
+        assertFalse(engine.isGameOver());
     }
 
     @Test
@@ -96,7 +97,7 @@ public class GameEngineTest {
     public void testRemainingAttemptsDisplayed() {
         engine.setTarget(50);
         GuessResult result = engine.makeGuess(1);
-        assertTrue(result.getMessage().contains("9 attempts remaining"));
+        assertEquals(9, result.getRemainingAttempts());
     }
 
     @Test
@@ -117,6 +118,7 @@ public class GameEngineTest {
             engine.makeGuess(1);
         }
         GuessResult result = engine.makeGuess(50);
+        assertTrue(result.isCorrect());
         assertTrue(engine.isGameWon());
         assertFalse(engine.isGameOver());
     }
@@ -134,5 +136,76 @@ public class GameEngineTest {
         }
         engine.reset();
         assertFalse(engine.isGameOver());
+    }
+
+    @Test
+    public void testHintVeryClose() {
+        engine.setTarget(50);
+        engine.makeGuess(60);
+        engine.makeGuess(60);
+        GuessResult result = engine.makeGuess(55);
+        assertTrue(result.getMessage().contains("Too high!"));
+        assertTrue(result.getHint().contains("HINT: You're very close!"));
+    }
+
+    @Test
+    public void testHintGettingWarmer() {
+        engine.setTarget(50);
+        for (int i = 0; i < 5; i++) {
+            engine.makeGuess(90);
+        }
+        GuessResult result = engine.makeGuess(65);
+        assertTrue(result.getHint().contains("HINT: Getting warmer!"));
+    }
+
+    @Test
+    public void testNoHintWhenFarAway() {
+        engine.setTarget(50);
+        for (int i = 0; i < 5; i++) {
+            engine.makeGuess(90);
+        }
+        GuessResult result = engine.makeGuess(1);
+        assertFalse(result.getHint().contains("HINT"));
+    }
+
+    @Test
+    public void testNoHintBeforeThreeAttempts() {
+        engine.setTarget(50);
+        GuessResult result = engine.makeGuess(55);
+        assertFalse(result.getHint().contains("HINT"));
+    }
+
+    @Test
+    public void testHintsCanBeDisabled() {
+        engine.setTarget(50);
+        engine.setHintsEnabled(false);
+        for (int i = 0; i < 3; i++) {
+            engine.makeGuess(60);
+        }
+        GuessResult result = engine.makeGuess(55);
+        assertFalse(result.getHint().contains("HINT"));
+    }
+
+    @Test
+    public void testHintsEnabledByDefault() {
+        assertTrue(engine.isHintsEnabled());
+    }
+
+    @Test
+    public void testSetHintsEnabled() {
+        engine.setHintsEnabled(false);
+        assertFalse(engine.isHintsEnabled());
+        engine.setHintsEnabled(true);
+        assertTrue(engine.isHintsEnabled());
+    }
+
+    @Test
+    public void testHintFieldAccessor() {
+        engine.setTarget(50);
+        for (int i = 0; i < 3; i++) {
+            engine.makeGuess(60);
+        }
+        GuessResult result = engine.makeGuess(55);
+        assertFalse(result.getHint().isEmpty());
     }
 }
